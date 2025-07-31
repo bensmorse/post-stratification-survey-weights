@@ -1,7 +1,335 @@
 ---
-title: "Untitled"
+title: "Post Stratification Survey Weights"
+subtitle: "Recovering Representative Estimates from a Phone Survey in Haiti"
 format: html
+execute:
+  warning: false
 ---
 
-post stratification survey weights
+```{r}
+#| warning: false
+#| include: false
 
+# load packages
+library(readxl)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(tidyquant)
+library(magrittr) 
+library(dplyr)
+
+library(Synth)
+library(SCtools)
+library(skimr)
+library(zoo)
+library(lubridate)
+library(dplyr)
+library(tidysynth)
+library(janitor)
+library(flextable)
+library(RColorBrewer)
+library(gt)
+library(kableExtra)
+
+
+```
+
+## Motivation
+
+The gold standard in public opinion research is probability sampling in which people are contacted and surveyed at random from a list of the population. But probability sampling is seldom possible in the real world. For starters, response rates for public opinion polls are often well below 10 percent, and respondents who answer and agree to participate constitute a selective sample that is likely to differ from the general population in terms of their demographic and socio-economic characteristics. Moreover, in many settings, there is no sampling frame or readily-available list of the population from which to sample. The end result is that the sample of respondents in the survey may look nothing like the general population about which the researcher is interested.
+
+To recover representative polling estimates, pollsters use a procedure known as post-stratification weighting. The idea is to algorithmically identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population.
+
+### Haiti Baseline Survey
+
+The GFA baseline survey was administered by between October 28 and December 12, 2024. The local data collection firm used a random-digit-dialing approach to contact respondents. Of the more than 30,000 call attempts, only 6,112 were answered.
+
+```{r}
+#| echo: false
+#| warning: false
+
+data <- read_csv("data\\Haiti_Survey_Data_DeID.csv")
+
+data |> 
+  mutate(disposition = case_when(call_disposition==0 ~ "answered",
+                                 call_disposition==1 ~ "rings busy",
+                                 call_disposition==2 ~ "blocked",
+                                 call_disposition==3 ~ "no answer",
+                                 call_disposition==4 ~ "voicemail",
+                                 call_disposition==5 ~ "business",
+                                 call_disposition==6 ~ "does not exist",
+                                 call_disposition==7 ~ "not active",
+                                 call_disposition==-77 ~ "other")) |>
+  group_by(disposition) |>
+  count() |>
+  flextable()
+
+
+```
+
+Of the 6,112 answered calls, 3,144 (51 percent) were met with a consenting respondent:
+
+```{r}
+#| echo: false
+
+
+data |> 
+  filter(call_disposition == 0) |>
+  mutate(consent = replace_na(consent, 0)) |> 
+  group_by(consent) |> 
+  count() |>
+  flextable()
+
+```
+
+```{r}
+#| include: false
+
+data <- read_csv("data\\Haiti_Survey_Data_DeID.csv")
+
+#######################
+# clean data --------------------------------------
+#######################
+
+
+# limit data to those who consented
+
+data <- data |> 
+  filter(consent == 1) 
+
+
+# Miscellaneous cleaning
+
+data <- data |>
+  mutate(age = replace(age, age<0, NA)) |>
+  rename("hnp_satisfaction" = "hnp_satisfication", # rename misspelled variables 
+         "tribunals_timely" = "tribuinals_timely",
+         "tribunals_independent" = "tribuinals_independent",
+         "oq_security_threat" = "oq_secruity_threat") %>%
+  filter(is.na(age) != TRUE & is.na(education) != TRUE) # drops 17 obs with considerable missingness throughout
+
+
+# Construct demographic vars & vars for post-stratification weighting 
+
+median_educ = median(data$education, na.rm = T)
+
+data <- data %>% 
+  mutate(youth = if_else(age < 3, 1, 0), # dummy for youth (USAID definition: youth < 30 years of age)
+         educ_above_p50 = if_else(education > median_educ, 1, 0), # dummy for education (above or below median)
+         Gender = if_else(gender==1, "Female","Male"),
+         region = case_when(
+           department == "Nord" | department == "Nord-Est" | department == "Nord-Ouest" ~ "North",
+           department == "Ouest" ~ "West",
+           department == "Centre" | department == "Artibonite" ~ "Center",
+           department == "Sud" | department == "Sud-Est" | department == "Nippes" | department == "GrandAnse" ~ "South"
+         ),
+         # construct variables for post-stratification weighting
+         # that exactly match construction for AB2021 survey (our reference population)
+         # note -- need to confirm how LB defined "Metropolitan area" and "Rest of West"
+         # Kesly recommends defining PauP as to include: Port-au-Prince, Croix-des-bouquets, Carrefour, Petion Ville, Delmas, Tabarre
+         Strata = case_when(
+           department == "Nord" | department == "Nord-Est" | department == "Nord-Ouest" ~ "Northern",
+           department == "Ouest" & subcommune == 34 ~ "Metropolitan area", # subcommune/arondissement 34 denotes port au prince
+           department == "Ouest" & subcommune != 34 ~ "Rest of West", # subcommune/arondissement 34 denotes port au prince
+           department == "Centre" | department == "Artibonite" ~ "Central",
+           department == "Sud" | department == "Sud-Est" | department == "Nippes" | department == "GrandAnse" ~ "Southern"
+         ),
+         Age = case_when(
+           age == 1 ~ "18 to 25",
+           age == 2 ~ "26 to 35",
+           age == 3 | age == 4 ~ "36 to 65", # need to collapse these b/c Latinobarometer measures 36-45, 46-55, and 56-65
+           age == 5 ~ "65+"
+         ),
+         Education = case_when(
+           education == 0 | education == -97 ~ "None",
+           education == 1 | education == 2 ~ "Primary",
+           education == 3 | education == 4 ~ "Secondary",
+           education == 5 | education == 6 | education == 7 | education == 8 ~ "University"
+         )
+  )
+
+
+```
+
+## Weighting Algorithm
+
+The goal is to identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population.
+
+To do this, we need reference distributions for these variables that constitute our best estimate of Haiti's actual population distributions. For this, we'll use the weighted sample distributions in listed in Table 1 of the [technical appendix](https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf) for the Latinobarometer's 2021 Haiti survey, which which was weighted to represent Haiti's population.[^1]
+
+[^1]: Note: the Latinobarometer does not specify the reference population it used to generate its weights or the procedure it used
+
+Now that we have our reference distributions, we use the [rake command](https://www.rdocumentation.org/packages/survey/versions/4.4-2/topics/rake) in R to identify post-stratification weights. The rake command uses an Iterative Proportional Fiting (IPF) algorithm to identify weights that produce marginal distributions that match the reference population. See [here](https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/) for a helpful tutorial on this procedure.
+
+<!-- helpful reference: https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/ -->
+
+<!-- also helpful: https://r-survey.r-forge.r-project.org/survey/wnar-calibrate.pdf -->
+
+<!-- https://www.pewresearch.org/decoded/2020/03/26/weighting-survey-data-with-the-pewmethods-r-package/ -->
+
+<!-- https://statmodeling.stat.columbia.edu/2024/01/24/resources-for-teaching-and-learning-survey-sampling-from-scott-keeter-at-pew-research/ -->
+
+```{r}
+#| warning: false
+#| message: false
+#| code-fold: true
+
+
+library(survey)
+
+# define data as survey data without weights
+data.svy.unweighted <- svydesign(ids=~1, data=data)
+
+# define marginal distributions using weighted sample summarized in Table 1 2021 Haiti Latinobarometer weighted sample, p. 4-5
+# https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf
+
+Gender.dist <- data.frame(Gender = c("Female", "Male"),
+                          Freq = nrow(data)*c(1563/3088,1525/3088))
+
+Strata.dist <- data.frame(Strata = c("Metropolitan area", "Northern", "Central", "Rest of West", "Southern"),
+                          Freq = nrow(data)*c(650/2605, 491/2605, 584/2605, 385/2605, 495/2605))
+
+Age.dist <-data.frame(Age = c("18 to 25", "26 to 35", "36 to 65", "65+"),
+                      Freq = nrow(data)*c(743/3088, 808/3088, (583+549+257)/3088, 148/3088)) 
+
+Education.dist <- data.frame(Education = c("None", "Primary", "Secondary", "University"),
+                       Freq = nrow(data)*c(194/2910, 459/2910, 1894/2910, 363/2910))
+
+
+# identify weights using IPF algorithm
+data.svy.rake <- rake(design = data.svy.unweighted,
+                       sample.margins = list(~Gender, ~Strata, ~Age, ~Education),
+                       population.margins = list(Gender.dist, Strata.dist, Age.dist, Education.dist))
+
+# check distribution of weights
+
+summary(weights(data.svy.rake))
+
+# trim weights to avoid overly small or large weights (to avoid overextrapolation)
+
+data.svy.rake.trim <- trimWeights(data.svy.rake, lower=0.2, upper=5, strict=TRUE) 
+
+# define weight variable based on raking
+
+data$weight <- weights(data.svy.rake.trim)
+
+
+```
+
+## Results
+
+Now we can compare the weighted and unweighted samples. The marginal distributions for the weighted sample closely match those of the weighted sample in the 2021 LAPOP Haiti survey.
+
+```{r}
+#| warning: false
+#| code-fold: true
+
+
+# calculated weighted demographics & compare to unweighted
+# weighted demographics match those of Latinobarometer Haiti 2021
+
+weighted_demographics <- data %>% 
+  summarize(
+    sample_size = nrow(data),
+    #Gender
+    female = weighted.mean(gender==1, weight, na.rm=TRUE), 
+    #Age
+    age_18_25 = weighted.mean(age==1, weight, na.rm=TRUE),
+    age_26_35 = weighted.mean(age==2, weight, na.rm=TRUE),
+    age_36_50 = weighted.mean(age==3, weight, na.rm=TRUE),
+    age_51_65 = weighted.mean(age==4, weight, na.rm=TRUE),
+    age_over65 = weighted.mean(age==5, weight, na.rm=TRUE),
+    # Strata
+    strata_metropolitan_area = weighted.mean(Strata=="Metropolitan area", weight, na.rm=TRUE),
+    strata_north = weighted.mean(Strata=="Northern", weight, na.rm=TRUE),
+    strata_central = weighted.mean(Strata=="Central", weight, na.rm=TRUE),
+    strata_rest_of_west = weighted.mean(Strata=="Rest of West", weight, na.rm=TRUE),
+    strata_southern = weighted.mean(Strata=="Southern", weight, na.rm=TRUE),
+    #Education
+    No_edu = weighted.mean(Education == "None", weight, na.rm=TRUE),
+    Primary = weighted.mean(Education == "Primary", weight, na.rm=TRUE),
+    Secondary = weighted.mean(Education == "Secondary", weight, na.rm=TRUE),
+    University = weighted.mean(Education == "University", weight, na.rm=TRUE),
+  ) %>% 
+  round(2)
+
+
+# unweighted demographics
+
+unweighted_demographics <- data %>% 
+  summarize(
+    sample_size = nrow(data),
+    #Gender
+    prop_female = mean(gender==1, na.rm=TRUE), 
+    #Age
+    age_18_25 = mean(age==1, na.rm=TRUE),
+    age_26_35 = mean(age==2, na.rm=TRUE),
+    age_36_50 = mean(age==3, na.rm=TRUE),
+    age_51_65 = mean(age==4, na.rm=TRUE),
+    age_over65 = mean(age==5, na.rm=TRUE),
+    # Strata
+    strata_metropolitan_area = mean(Strata=="Metropolitan area", na.rm=TRUE),
+    strata_north = mean(Strata=="Northern", na.rm=TRUE),
+    strata_central = mean(Strata=="Central", na.rm=TRUE),
+    strata_rest_of_west = mean(Strata=="Rest of West", na.rm=TRUE),
+    strata_southern = mean(Strata=="Southern", na.rm=TRUE),
+    #Education
+    no_edu = mean(Education == "None", na.rm=TRUE),
+    Primary = mean(Education == "Primary", na.rm=TRUE),
+    Secondary = mean(Education == "Secondary", na.rm=TRUE),
+    University = mean(Education == "University", na.rm=TRUE),
+  ) %>% 
+  round(2)
+
+
+unweighted_demographics <- gather(unweighted_demographics, varname, unweighted, 1:length(unweighted_demographics)) %>%
+  select(unweighted)
+
+
+demographics_out <- weighted_demographics %>%
+  gather(., varname, weighted, 1:length(weighted_demographics)) %>%
+  bind_cols(unweighted_demographics)
+
+demographics_out |>
+    flextable()
+
+
+```
+
+Which we can visualize as follows:
+
+```{r}
+#| code-fold: true
+
+
+demographics_out |>
+  # Remove sample_size row since it's not a proportion
+  filter(varname != "sample_size") |>
+  # Pivot to long format for ggplot
+  pivot_longer(cols = c(weighted, unweighted), 
+               names_to = "sample_type", 
+               values_to = "proportion") |>
+  # Create the plot
+  ggplot(aes(x = varname, y = proportion, fill = sample_type)) +
+  geom_col(position = "dodge", width = 0.7) +
+  scale_fill_manual(values = c("weighted" = "#2E86AB", "unweighted" = "#A23B72"),
+                    labels = c("Weighted", "Unweighted")) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Weighted vs. Unweighted Sample Demographics",
+    subtitle = "Comparison of demographic proportions before and after post-stratification weighting",
+    x = "Demographic Variables",
+    y = "Proportion",
+    fill = "Sample Type"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    plot.title = element_text(size = 14, face = "bold"),
+    plot.subtitle = element_text(size = 12, color = "gray60")
+  )
+
+
+```
