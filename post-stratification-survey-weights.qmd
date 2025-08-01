@@ -1,6 +1,5 @@
 ---
-title: "Post Stratification Survey Weights"
-subtitle: "Recovering Representative Estimates from a Phone Survey in Haiti"
+title: "Post-stratification Weighting to Recover Representative Estimates from Selective Samples"
 format: html
 execute:
   warning: false
@@ -37,13 +36,20 @@ library(kableExtra)
 
 ## Motivation
 
-The gold standard in public opinion research is probability sampling in which people are contacted and surveyed at random from a list of the population. But probability sampling is seldom possible in the real world. For starters, response rates for public opinion polls are often well below 10 percent, and respondents who answer and agree to participate constitute a selective sample that is likely to differ from the general population in terms of their demographic and socio-economic characteristics. Moreover, in many settings, there is no sampling frame or readily-available list of the population from which to sample. The end result is that the sample of respondents in the survey may look nothing like the general population about which the researcher is interested.
+A gold standard methodology in survey-based research is probability sampling in which people are contacted and surveyed at random from a list of the population. But strict adherance to probability sampling is seldom possible in the real world. For starters, response rates for surveys are often well below 10 percent, and respondents who answer and agree to participate are a selective sample that is likely to differ from the general population in terms of their demographic and socio-economic characteristics. Moreover, in many settings, there is no sampling frame or readily-available list of the population from which to sample. The end result is that the sample of respondents in the survey may look nothing like the general population that the researcher is interested in.
 
-To recover representative polling estimates, pollsters use a procedure known as post-stratification weighting. The idea is to algorithmically identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population.
+The challenge of generalizing findings from a selective sample to a larger population is not unique to survey research. Medical studies  often involve intensive recruitment protocols in which only a selective subset of eligible patients are enrolled. And in tech, UX researchers often conduct feedback surveys or A/B tests on convenience samples whose characteristics differ from those of their user base.   
 
-### Haiti Baseline Survey
+In these and many other settings, researchers can use a procedure known as post-stratification weighting to recover representative estimates. While the algorithm is complicated, the idea is simple: identify a set of weights such that the weighted sample matches the reference population in terms of its average demographic make-up and other variables of interest. Assuming these weights capture all the sources of confounding between the sample and reference population, analysis on the weighted sample will be unbiased.   
 
-The GFA baseline survey was administered by between October 28 and December 12, 2024. The local data collection firm used a random-digit-dialing approach to contact respondents. Of the more than 30,000 call attempts, only 6,112 were answered.
+<!--- The idea is to algorithmically identify a set of weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population. --->
+<!---  to do: footnote with comparison to post-stratification weighting and design weights --->
+<!--- At the analysis phase, weighting can help medical researchers generalize from clinical sample to the broader patient population of interest. --->
+
+
+### Use Case: Random Digit Dialing Phone Survey in Haiti
+
+In 2024, the U.S. State Department commissioned a [phone survey in Haiti](https://www.state.gov/wp-content/uploads/2025/06/Report-Eval-of-Activities-from-the-Global-Fragility-Act-H-Report_006042-Accessible-6.5.2025.pdf) to better understand socio-economic and humanitarian outcomes in the country. The survey was administered by between October 28 and December 12, 2024 and relied on a random-digit-dialing (RDD) approach to contact and survey respondents. The use of RDD implies several sources of selection: 1) having a working phone, 2) answering the phone, and 3) consenting to the survey. Indeed, of the more than 30,000 call attempts, only 6,112 were answered.
 
 ```{r}
 #| echo: false
@@ -68,7 +74,7 @@ data |>
 
 ```
 
-Of the 6,112 answered calls, 3,144 (51 percent) were met with a consenting respondent:
+And of the 6,112 answered calls, 3,144 (51 percent) were met with a consenting respondent:
 
 ```{r}
 #| echo: false
@@ -83,8 +89,11 @@ data |>
 
 ```
 
+
+
 ```{r}
 #| include: false
+#| label: load-and-clean-data
 
 data <- read_csv("data\\Haiti_Survey_Data_DeID.csv")
 
@@ -156,11 +165,10 @@ data <- data %>%
 
 The goal is to identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population.
 
-To do this, we need reference distributions for these variables that constitute our best estimate of Haiti's actual population distributions. For this, we'll use the weighted sample distributions in listed in Table 1 of the [technical appendix](https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf) for the Latinobarometer's 2021 Haiti survey, which which was weighted to represent Haiti's population.[^1]
+To do this, we need reference distributions for these variables that constitute our best estimate of Haiti's actual population distributions. For this, we'll use the weighted sample distributions in listed in Table 1 of the [technical appendix](https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf) for the Latinobarometer's 2021 Haiti survey, which which was weighted to represent Haiti's population based on census data they were able to access in country.
 
-[^1]: Note: the Latinobarometer does not specify the reference population it used to generate its weights or the procedure it used
 
-Now that we have our reference distributions, we use the [rake command](https://www.rdocumentation.org/packages/survey/versions/4.4-2/topics/rake) in R to identify post-stratification weights. The rake command uses an Iterative Proportional Fiting (IPF) algorithm to identify weights that produce marginal distributions that match the reference population. See [here](https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/) for a helpful tutorial on this procedure.
+Now that we have our reference distributions, we use the [rake command](https://www.rdocumentation.org/packages/survey/versions/4.4-2/topics/rake) in R to identify post-stratification weights. The rake command uses an Iterative Proportional Fiting (IPF) algorithm to identify weights that produce marginal distributions that match the reference population. See [here](https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/) for a helpful tutorial on this procedure, or click the code-fold for line-by-line annotation.
 
 <!-- helpful reference: https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/ -->
 
@@ -204,7 +212,18 @@ data.svy.rake <- rake(design = data.svy.unweighted,
 
 # check distribution of weights
 
-summary(weights(data.svy.rake))
+#summary(weights(data.svy.rake)) 
+
+# Create a summary data frame of the weights
+weights_summary <- data.frame(
+  statistic = names(summary(weights(data.svy.rake))),
+  value = round(as.numeric(summary(weights(data.svy.rake))), digits = 2)
+)
+
+weights_summary |>
+  gt() |>
+  tab_header(title = "Distribution of Weights")
+
 
 # trim weights to avoid overly small or large weights (to avoid overextrapolation)
 
@@ -292,7 +311,8 @@ demographics_out <- weighted_demographics %>%
   bind_cols(unweighted_demographics)
 
 demographics_out |>
-    flextable()
+  gt() |>
+  tab_header(title = "Weighted vs. Unweighted Sample Demographics")
 
 
 ```
@@ -301,6 +321,7 @@ Which we can visualize as follows:
 
 ```{r}
 #| code-fold: true
+#| label: fig-weighted-unweighted-demographics
 
 
 demographics_out |>
@@ -330,6 +351,136 @@ demographics_out |>
     plot.title = element_text(size = 14, face = "bold"),
     plot.subtitle = element_text(size = 12, color = "gray60")
   )
+
+
+```
+
+
+## Substantive Analysis
+
+
+```{r}
+#| include: false
+#| code-fold: true
+
+# construct variables of interest
+
+data <- data |>
+  mutate(
+    no_food_3m_dum = if_else(no_food_3m == 1, 1, 0),
+    trust_govt_dum = if_else(trust_govt >= 4, 1, 0),
+    employed_dum = if_else(employment == 3, 1, 0),
+    family_migrate_dum = if_else(family_migrate_next12m == 2 | family_migrate_next12m == 3, 1, 0)
+  )
+
+# Function to calculate weighted standard errors for binary variables
+weighted_se <- function(x, weights) {
+  p <- weighted.mean(x, weights, na.rm = TRUE)
+  n_eff <- sum(weights[!is.na(x)])^2 / sum(weights[!is.na(x)]^2)
+  sqrt(p * (1 - p) / n_eff)
+}
+
+# Calculate means and confidence intervals for all four variables
+substantive_analysis <- data |>
+  summarize(
+    across(c(trust_govt_dum, employed_dum, no_food_3m_dum, family_migrate_dum),
+           list(
+             unweighted_mean = ~mean(.x, na.rm = TRUE),
+             unweighted_se = ~sqrt(mean(.x, na.rm = TRUE) * (1 - mean(.x, na.rm = TRUE)) / sum(!is.na(.x))),
+             weighted_mean = ~weighted.mean(.x, weight, na.rm = TRUE),
+             weighted_se = ~weighted_se(.x, weight)
+           ))
+  ) |>
+  # Reshape for easier handling
+  pivot_longer(everything(), names_to = "variable", values_to = "value") |>
+  separate(variable, into = c("var_name", "statistic"), sep = "_(?=unweighted|weighted)") |>
+  pivot_wider(names_from = statistic, values_from = value) |>
+  # Calculate confidence intervals
+  mutate(
+    unweighted_ci_lower = unweighted_mean - 1.96 * unweighted_se,
+    unweighted_ci_upper = unweighted_mean + 1.96 * unweighted_se,
+    weighted_ci_lower = weighted_mean - 1.96 * weighted_se,
+    weighted_ci_upper = weighted_mean + 1.96 * weighted_se,
+    # Clean variable names
+    variable = case_when(
+      var_name == "trust_govt_dum" ~ "Trusts Government",
+      var_name == "employed_dum" ~ "Employed",
+      var_name == "no_food_3m_dum" ~ "Skipped Meals (Past 3 Months)",
+      var_name == "family_migrate_dum" ~ "Plans to Migrate"
+    )
+  )
+
+# Create summary table
+results_table <- substantive_analysis |>
+  select(variable, 
+         unweighted_mean, unweighted_ci_lower, unweighted_ci_upper,
+         weighted_mean, weighted_ci_lower, weighted_ci_upper) |>
+  mutate(
+    unweighted_ci = paste0("[", round(unweighted_ci_lower, 3), ", ", round(unweighted_ci_upper, 3), "]"),
+    weighted_ci = paste0("[", round(weighted_ci_lower, 3), ", ", round(weighted_ci_upper, 3), "]")
+  ) |>
+  select(Variable = variable,
+         `Unweighted Mean` = unweighted_mean,
+         `Unweighted 95% CI` = unweighted_ci,
+         `Weighted Mean` = weighted_mean,
+         `Weighted 95% CI` = weighted_ci) |>
+  mutate(
+    `Unweighted Mean` = round(`Unweighted Mean`, 3),
+    `Weighted Mean` = round(`Weighted Mean`, 3)
+  )
+
+results_table |>
+  gt() |>
+  tab_header(title = "Outcomes in Weighted vs. Unweighted Samples")
+
+
+```
+
+
+How does the use of post-stratification weights affect our results? @fig-weighted-unweighted-means shows the weighted versus unweighted means for four key outcome variables --- employed, plans to migrate to the U.S. in the next year, experiencing food insecurity, and trusts the Haitian government. As it turns out, the weighted vs. unweighted means are broadly similar, suggesting that the sources of selection into our sample (summarized in @fig-weighted-unweighted-demographics) are not strong determinants of our outcomes of interest and thus not particularly consequential. But there was no ex-ante guarantee that this would be the case. 
+
+
+```{r}
+#| code-fold: true
+#| label: fig-weighted-unweighted-means
+
+library(ggplot2)
+
+# Prepare data for plotting
+plot_data <- substantive_analysis |>
+  select(variable, unweighted_mean, unweighted_ci_lower, unweighted_ci_upper,
+         weighted_mean, weighted_ci_lower, weighted_ci_upper) |>
+  pivot_longer(cols = -variable, names_to = "measure", values_to = "value") |>
+  separate(measure, into = c("weight_type", "statistic"), sep = "_(?=mean|ci)") |>
+  pivot_wider(names_from = statistic, values_from = value) |>
+  mutate(
+    weight_type = case_when(
+      weight_type == "unweighted" ~ "Unweighted",
+      weight_type == "weighted" ~ "Weighted"
+    )
+  )
+
+# Create the plot
+comparison_plot <- ggplot(plot_data, aes(x = variable, y = mean, color = weight_type)) +
+  geom_point(position = position_dodge(width = 0.3), size = 3) +
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), 
+                position = position_dodge(width = 0.3), width = 0.2) +
+  labs(
+    title = "Weighted vs Unweighted Estimates with 95% Confidence Intervals",
+    subtitle = "Haiti Survey Data - Key Outcome Variables",
+    x = "Variable",
+    y = "Proportion",
+    color = "Estimation Method"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom"
+  ) +
+  scale_color_manual(values = c("Unweighted" = "#E31A1C", "Weighted" = "#1F78B4"))
+
+print(comparison_plot)
 
 
 ```

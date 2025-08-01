@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Post Stratification Survey Weights</title>
+<title>Post-stratification Weighting to Recover Representative Estimates from Selective Samples</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -144,10 +144,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a>
   <ul class="collapse">
-  <li><a href="#haiti-baseline-survey" id="toc-haiti-baseline-survey" class="nav-link" data-scroll-target="#haiti-baseline-survey">Haiti Baseline Survey</a></li>
+  <li><a href="#use-case-random-digit-dialing-phone-survey-in-haiti" id="toc-use-case-random-digit-dialing-phone-survey-in-haiti" class="nav-link" data-scroll-target="#use-case-random-digit-dialing-phone-survey-in-haiti">Use Case: Random Digit Dialing Phone Survey in Haiti</a></li>
   </ul></li>
   <li><a href="#weighting-algorithm" id="toc-weighting-algorithm" class="nav-link" data-scroll-target="#weighting-algorithm">Weighting Algorithm</a></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#substantive-analysis" id="toc-substantive-analysis" class="nav-link" data-scroll-target="#substantive-analysis">Substantive Analysis</a></li>
   </ul>
 </nav>
     </div>
@@ -156,8 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Post Stratification Survey Weights</h1>
-<p class="subtitle lead">Recovering Representative Estimates from a Phone Survey in Haiti</p>
+<h1 class="title">Post-stratification Weighting to Recover Representative Estimates from Selective Samples</h1>
 </div>
 
 
@@ -176,20 +176,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="motivation" class="level2">
 <h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
-<p>The gold standard in public opinion research is probability sampling in which people are contacted and surveyed at random from a list of the population. But probability sampling is seldom possible in the real world. For starters, response rates for public opinion polls are often well below 10 percent, and respondents who answer and agree to participate constitute a selective sample that is likely to differ from the general population in terms of their demographic and socio-economic characteristics. Moreover, in many settings, there is no sampling frame or readily-available list of the population from which to sample. The end result is that the sample of respondents in the survey may look nothing like the general population about which the researcher is interested.</p>
-<p>To recover representative polling estimates, pollsters use a procedure known as post-stratification weighting. The idea is to algorithmically identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti’s actual population.</p>
-<section id="haiti-baseline-survey" class="level3">
-<h3 class="anchored" data-anchor-id="haiti-baseline-survey">Haiti Baseline Survey</h3>
-<p>The GFA baseline survey was administered by between October 28 and December 12, 2024. The local data collection firm used a random-digit-dialing approach to contact respondents. Of the more than 30,000 call attempts, only 6,112 were answered.</p>
+<p>A gold standard methodology in survey-based research is probability sampling in which people are contacted and surveyed at random from a list of the population. But strict adherance to probability sampling is seldom possible in the real world. For starters, response rates for surveys are often well below 10 percent, and respondents who answer and agree to participate are a selective sample that is likely to differ from the general population in terms of their demographic and socio-economic characteristics. Moreover, in many settings, there is no sampling frame or readily-available list of the population from which to sample. The end result is that the sample of respondents in the survey may look nothing like the general population that the researcher is interested in.</p>
+<p>The challenge of generalizing findings from a selective sample to a larger population is not unique to survey research. Medical studies often involve intensive recruitment protocols in which only a selective subset of eligible patients are enrolled. And in tech, UX researchers often conduct feedback surveys or A/B tests on convenience samples whose characteristics differ from those of their user base.</p>
+<p>In these and many other settings, researchers can use a procedure known as post-stratification weighting to recover representative estimates. While the algorithm is complicated, the idea is simple: identify a set of weights such that the weighted sample matches the reference population in terms of its average demographic make-up and other variables of interest. Assuming these weights capture all the sources of confounding between the sample and reference population, analysis on the weighted sample will be unbiased.</p>
+<!--- The idea is to algorithmically identify a set of weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population. --->
+<!---  to do: footnote with comparison to post-stratification weighting and design weights --->
+<!--- At the analysis phase, weighting can help medical researchers generalize from clinical sample to the broader patient population of interest. --->
+<section id="use-case-random-digit-dialing-phone-survey-in-haiti" class="level3">
+<h3 class="anchored" data-anchor-id="use-case-random-digit-dialing-phone-survey-in-haiti">Use Case: Random Digit Dialing Phone Survey in Haiti</h3>
+<p>In 2024, the U.S. State Department commissioned a <a href="https://www.state.gov/wp-content/uploads/2025/06/Report-Eval-of-Activities-from-the-Global-Fragility-Act-H-Report_006042-Accessible-6.5.2025.pdf">phone survey in Haiti</a> to better understand socio-economic and humanitarian outcomes in the country. The survey was administered by between October 28 and December 12, 2024 and relied on a random-digit-dialing (RDD) approach to contact and survey respondents. The use of RDD implies several sources of selection: 1) having a working phone, 2) answering the phone, and 3) consenting to the survey. Indeed, of the more than 30,000 call attempts, only 6,112 were answered.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-51c7bea0{}.cl-51be2656{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-51c1b6c2{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-51c1b6cc{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-51c1d77e{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51c1d788{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51c1d789{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51c1d792{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51c1d793{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51c1d79c{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-51c7bea0"><thead><tr style="overflow-wrap:break-word;"><th class="cl-51c1d77e"><p class="cl-51c1b6c2"><span class="cl-51be2656">disposition</span></p></th><th class="cl-51c1d788"><p class="cl-51c1b6cc"><span class="cl-51be2656">n</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">answered</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">6,112</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">blocked</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">20</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">business</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">784</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">does not exist</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">222</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">no answer</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">1,369</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">not active</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">4,020</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">other</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">29</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d789"><p class="cl-51c1b6c2"><span class="cl-51be2656">rings busy</span></p></td><td class="cl-51c1d792"><p class="cl-51c1b6cc"><span class="cl-51be2656">55</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51c1d793"><p class="cl-51c1b6c2"><span class="cl-51be2656">voicemail</span></p></td><td class="cl-51c1d79c"><p class="cl-51c1b6cc"><span class="cl-51be2656">16,717</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-2d23ae0e{}.cl-2d16ab50{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-2d1aff5c{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-2d1aff66{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-2d1b2bee{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d1b2bf8{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d1b2c02{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d1b2c03{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d1b2c0c{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d1b2c16{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-2d23ae0e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-2d1b2bee"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">disposition</span></p></th><th class="cl-2d1b2bf8"><p class="cl-2d1aff66"><span class="cl-2d16ab50">n</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">answered</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">6,112</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">blocked</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">20</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">business</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">784</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">does not exist</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">222</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">no answer</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">1,369</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">not active</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">4,020</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">other</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">29</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c02"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">rings busy</span></p></td><td class="cl-2d1b2c03"><p class="cl-2d1aff66"><span class="cl-2d16ab50">55</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d1b2c0c"><p class="cl-2d1aff5c"><span class="cl-2d16ab50">voicemail</span></p></td><td class="cl-2d1b2c16"><p class="cl-2d1aff66"><span class="cl-2d16ab50">16,717</span></p></td></tr></tbody></table></div>
 </div>
 </div>
-<p>Of the 6,112 answered calls, 3,144 (51 percent) were met with a consenting respondent:</p>
+<p>And of the 6,112 answered calls, 3,144 (51 percent) were met with a consenting respondent:</p>
 <div class="cell">
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-51f2c64a{}.cl-51eb2f3e{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-51ee5aec{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-51ee78b0{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51ee78b1{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-51ee78ba{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-51f2c64a"><thead><tr style="overflow-wrap:break-word;"><th class="cl-51ee78b0"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">consent</span></p></th><th class="cl-51ee78b0"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">n</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-51ee78b1"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">0</span></p></td><td class="cl-51ee78b1"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">2,968</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-51ee78ba"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">1</span></p></td><td class="cl-51ee78ba"><p class="cl-51ee5aec"><span class="cl-51eb2f3e">3,144</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-2d5a8c94{}.cl-2d4f9046{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-2d547228{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-2d549d7a{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d549d84{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-2d549d85{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-2d5a8c94"><thead><tr style="overflow-wrap:break-word;"><th class="cl-2d549d7a"><p class="cl-2d547228"><span class="cl-2d4f9046">consent</span></p></th><th class="cl-2d549d7a"><p class="cl-2d547228"><span class="cl-2d4f9046">n</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-2d549d84"><p class="cl-2d547228"><span class="cl-2d4f9046">0</span></p></td><td class="cl-2d549d84"><p class="cl-2d547228"><span class="cl-2d4f9046">2,968</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-2d549d85"><p class="cl-2d547228"><span class="cl-2d4f9046">1</span></p></td><td class="cl-2d549d85"><p class="cl-2d547228"><span class="cl-2d4f9046">3,144</span></p></td></tr></tbody></table></div>
 </div>
 </div>
 </section>
@@ -197,8 +201,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="weighting-algorithm" class="level2">
 <h2 class="anchored" data-anchor-id="weighting-algorithm">Weighting Algorithm</h2>
 <p>The goal is to identify a set weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti’s actual population.</p>
-<p>To do this, we need reference distributions for these variables that constitute our best estimate of Haiti’s actual population distributions. For this, we’ll use the weighted sample distributions in listed in Table 1 of the <a href="https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf">technical appendix</a> for the Latinobarometer’s 2021 Haiti survey, which which was weighted to represent Haiti’s population.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>Now that we have our reference distributions, we use the <a href="https://www.rdocumentation.org/packages/survey/versions/4.4-2/topics/rake">rake command</a> in R to identify post-stratification weights. The rake command uses an Iterative Proportional Fiting (IPF) algorithm to identify weights that produce marginal distributions that match the reference population. See <a href="https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/">here</a> for a helpful tutorial on this procedure.</p>
+<p>To do this, we need reference distributions for these variables that constitute our best estimate of Haiti’s actual population distributions. For this, we’ll use the weighted sample distributions in listed in Table 1 of the <a href="https://www.vanderbilt.edu/lapop/haiti/ABHTI2021-Technical-Report-v1.0-FINAL-eng-110921.pdf">technical appendix</a> for the Latinobarometer’s 2021 Haiti survey, which which was weighted to represent Haiti’s population based on census data they were able to access in country.</p>
+<p>Now that we have our reference distributions, we use the <a href="https://www.rdocumentation.org/packages/survey/versions/4.4-2/topics/rake">rake command</a> in R to identify post-stratification weights. The rake command uses an Iterative Proportional Fiting (IPF) algorithm to identify weights that produce marginal distributions that match the reference population. See <a href="https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/">here</a> for a helpful tutorial on this procedure, or click the code-fold for line-by-line annotation.</p>
 <!-- helpful reference: https://www.r-bloggers.com/2014/04/survey-computing-your-own-post-stratification-weights-in-r/ -->
 <!-- also helpful: https://r-survey.r-forge.r-project.org/survey/wnar-calibrate.pdf -->
 <!-- https://www.pewresearch.org/decoded/2020/03/26/weighting-survey-data-with-the-pewmethods-r-package/ -->
@@ -234,21 +238,518 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># check distribution of weights</span></span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">weights</span>(data.svy.rake))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co">#summary(weights(data.svy.rake)) </span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a summary data frame of the weights</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>weights_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">statistic =</span> <span class="fu">names</span>(<span class="fu">summary</span>(<span class="fu">weights</span>(data.svy.rake))),</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">value =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">summary</span>(<span class="fu">weights</span>(data.svy.rake))), <span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>weights_summary <span class="sc">|&gt;</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Distribution of Weights"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.1544  0.4596  0.8019  1.0000  1.2894  8.6292 </code></pre>
+<div class="cell-output-display">
+<div id="cetpxlxxlu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cetpxlxxlu table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#cetpxlxxlu thead, #cetpxlxxlu tbody, #cetpxlxxlu tfoot, #cetpxlxxlu tr, #cetpxlxxlu td, #cetpxlxxlu th {
+  border-style: none;
+}
+
+#cetpxlxxlu p {
+  margin: 0;
+  padding: 0;
+}
+
+#cetpxlxxlu .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#cetpxlxxlu .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#cetpxlxxlu .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#cetpxlxxlu .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#cetpxlxxlu .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#cetpxlxxlu .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#cetpxlxxlu .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#cetpxlxxlu .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#cetpxlxxlu .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#cetpxlxxlu .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#cetpxlxxlu .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#cetpxlxxlu .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#cetpxlxxlu .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#cetpxlxxlu .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#cetpxlxxlu .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cetpxlxxlu .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#cetpxlxxlu .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#cetpxlxxlu .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#cetpxlxxlu .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cetpxlxxlu .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#cetpxlxxlu .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cetpxlxxlu .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#cetpxlxxlu .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cetpxlxxlu .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#cetpxlxxlu .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cetpxlxxlu .gt_left {
+  text-align: left;
+}
+
+#cetpxlxxlu .gt_center {
+  text-align: center;
+}
+
+#cetpxlxxlu .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#cetpxlxxlu .gt_font_normal {
+  font-weight: normal;
+}
+
+#cetpxlxxlu .gt_font_bold {
+  font-weight: bold;
+}
+
+#cetpxlxxlu .gt_font_italic {
+  font-style: italic;
+}
+
+#cetpxlxxlu .gt_super {
+  font-size: 65%;
+}
+
+#cetpxlxxlu .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#cetpxlxxlu .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#cetpxlxxlu .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#cetpxlxxlu .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#cetpxlxxlu .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#cetpxlxxlu .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#cetpxlxxlu .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#cetpxlxxlu .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#cetpxlxxlu div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border">Distribution of Weights</th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="statistic" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">statistic</th>
+<th id="value" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">value</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="statistic">Min.</td>
+<td class="gt_row gt_right" headers="value">0.15</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="statistic">1st Qu.</td>
+<td class="gt_row gt_right" headers="value">0.46</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="statistic">Median</td>
+<td class="gt_row gt_right" headers="value">0.80</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="statistic">Mean</td>
+<td class="gt_row gt_right" headers="value">1.00</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="statistic">3rd Qu.</td>
+<td class="gt_row gt_right" headers="value">1.29</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="statistic">Max.</td>
+<td class="gt_row gt_right" headers="value">8.63</td>
+</tr>
+</tbody>
+</table>
+
+</div>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># trim weights to avoid overly small or large weights (to avoid overextrapolation)</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>data.svy.rake.trim <span class="ot">&lt;-</span> <span class="fu">trimWeights</span>(data.svy.rake, <span class="at">lower=</span><span class="fl">0.2</span>, <span class="at">upper=</span><span class="dv">5</span>, <span class="at">strict=</span><span class="cn">TRUE</span>) </span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># define weight variable based on raking</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="fu">weights</span>(data.svy.rake.trim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># trim weights to avoid overly small or large weights (to avoid overextrapolation)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data.svy.rake.trim <span class="ot">&lt;-</span> <span class="fu">trimWeights</span>(data.svy.rake, <span class="at">lower=</span><span class="fl">0.2</span>, <span class="at">upper=</span><span class="dv">5</span>, <span class="at">strict=</span><span class="cn">TRUE</span>) </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># define weight variable based on raking</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>weight <span class="ot">&lt;-</span> <span class="fu">weights</span>(data.svy.rake.trim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -258,114 +759,723 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculated weighted demographics &amp; compare to unweighted</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted demographics match those of Latinobarometer Haiti 2021</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>weighted_demographics <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">nrow</span>(data),</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Gender</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">female =</span> <span class="fu">weighted.mean</span>(gender<span class="sc">==</span><span class="dv">1</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>), </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Age</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_18_25 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">1</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_26_35 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">2</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_36_50 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">3</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_51_65 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">4</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_over65 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">5</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Strata</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_metropolitan_area =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Metropolitan area"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_north =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Northern"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_central =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Central"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_rest_of_west =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Rest of West"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_southern =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Southern"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Education</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">No_edu =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"None"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">Primary =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"Primary"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">Secondary =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"Secondary"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">University =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"University"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">2</span>)</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># unweighted demographics</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>unweighted_demographics <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">nrow</span>(data),</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Gender</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop_female =</span> <span class="fu">mean</span>(gender<span class="sc">==</span><span class="dv">1</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>), </span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Age</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_18_25 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">1</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_26_35 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_36_50 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">3</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_51_65 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">4</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_over65 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">5</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Strata</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_metropolitan_area =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Metropolitan area"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_north =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Northern"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_central =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Central"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_rest_of_west =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Rest of West"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_southern =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Southern"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Education</span></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_edu =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"None"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">Primary =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"Primary"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">Secondary =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"Secondary"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">University =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"University"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">2</span>)</span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>unweighted_demographics <span class="ot">&lt;-</span> <span class="fu">gather</span>(unweighted_demographics, varname, unweighted, <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(unweighted_demographics)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unweighted)</span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="ot">&lt;-</span> weighted_demographics <span class="sc">%&gt;%</span></span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(., varname, weighted, <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(weighted_demographics)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(unweighted_demographics)</span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="sc">|&gt;</span></span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">flextable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculated weighted demographics &amp; compare to unweighted</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted demographics match those of Latinobarometer Haiti 2021</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>weighted_demographics <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">nrow</span>(data),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Gender</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">female =</span> <span class="fu">weighted.mean</span>(gender<span class="sc">==</span><span class="dv">1</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>), </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Age</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_18_25 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">1</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_26_35 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">2</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_36_50 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">3</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_51_65 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">4</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_over65 =</span> <span class="fu">weighted.mean</span>(age<span class="sc">==</span><span class="dv">5</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Strata</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_metropolitan_area =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Metropolitan area"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_north =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Northern"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_central =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Central"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_rest_of_west =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Rest of West"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_southern =</span> <span class="fu">weighted.mean</span>(Strata<span class="sc">==</span><span class="st">"Southern"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Education</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">No_edu =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"None"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">Primary =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"Primary"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">Secondary =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"Secondary"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">University =</span> <span class="fu">weighted.mean</span>(Education <span class="sc">==</span> <span class="st">"University"</span>, weight, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">2</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="co"># unweighted demographics</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>unweighted_demographics <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_size =</span> <span class="fu">nrow</span>(data),</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Gender</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop_female =</span> <span class="fu">mean</span>(gender<span class="sc">==</span><span class="dv">1</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>), </span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Age</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_18_25 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">1</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_26_35 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">2</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_36_50 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">3</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_51_65 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">4</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_over65 =</span> <span class="fu">mean</span>(age<span class="sc">==</span><span class="dv">5</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Strata</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_metropolitan_area =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Metropolitan area"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_north =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Northern"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_central =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Central"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_rest_of_west =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Rest of West"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">strata_southern =</span> <span class="fu">mean</span>(Strata<span class="sc">==</span><span class="st">"Southern"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Education</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">no_edu =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"None"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">Primary =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"Primary"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">Secondary =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"Secondary"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">University =</span> <span class="fu">mean</span>(Education <span class="sc">==</span> <span class="st">"University"</span>, <span class="at">na.rm=</span><span class="cn">TRUE</span>),</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="dv">2</span>)</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>unweighted_demographics <span class="ot">&lt;-</span> <span class="fu">gather</span>(unweighted_demographics, varname, unweighted, <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(unweighted_demographics)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unweighted)</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="ot">&lt;-</span> weighted_demographics <span class="sc">%&gt;%</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gather</span>(., varname, weighted, <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(weighted_demographics)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(unweighted_demographics)</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="sc">|&gt;</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Weighted vs. Unweighted Sample Demographics"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-5341b4e8{}.cl-53392ec2{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-533c98dc{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-533c98e6{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-533cb902{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-533cb90c{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-533cb916{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-533cb917{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-533cb920{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-533cb921{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-5341b4e8"><thead><tr style="overflow-wrap:break-word;"><th class="cl-533cb902"><p class="cl-533c98dc"><span class="cl-53392ec2">varname</span></p></th><th class="cl-533cb90c"><p class="cl-533c98e6"><span class="cl-53392ec2">weighted</span></p></th><th class="cl-533cb90c"><p class="cl-533c98e6"><span class="cl-53392ec2">unweighted</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">sample_size</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">3,127.00</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">3,127.00</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">female</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.50</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.39</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">age_18_25</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.24</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.22</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">age_26_35</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.26</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.36</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">age_36_50</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.35</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.31</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">age_51_65</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.10</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.09</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">age_over65</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.04</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.02</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">strata_metropolitan_area</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.25</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.24</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">strata_north</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.19</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.22</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">strata_central</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.22</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.16</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">strata_rest_of_west</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.15</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.08</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">strata_southern</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.19</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.29</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">No_edu</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.06</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.02</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">Primary</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.16</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.14</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb916"><p class="cl-533c98dc"><span class="cl-53392ec2">Secondary</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.65</span></p></td><td class="cl-533cb917"><p class="cl-533c98e6"><span class="cl-53392ec2">0.52</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-533cb920"><p class="cl-533c98dc"><span class="cl-53392ec2">University</span></p></td><td class="cl-533cb921"><p class="cl-533c98e6"><span class="cl-53392ec2">0.13</span></p></td><td class="cl-533cb921"><p class="cl-533c98e6"><span class="cl-53392ec2">0.33</span></p></td></tr></tbody></table></div>
+<div id="acyclqutir" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#acyclqutir table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#acyclqutir thead, #acyclqutir tbody, #acyclqutir tfoot, #acyclqutir tr, #acyclqutir td, #acyclqutir th {
+  border-style: none;
+}
+
+#acyclqutir p {
+  margin: 0;
+  padding: 0;
+}
+
+#acyclqutir .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#acyclqutir .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#acyclqutir .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#acyclqutir .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#acyclqutir .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#acyclqutir .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#acyclqutir .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#acyclqutir .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#acyclqutir .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#acyclqutir .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#acyclqutir .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#acyclqutir .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#acyclqutir .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#acyclqutir .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#acyclqutir .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#acyclqutir .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#acyclqutir .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#acyclqutir .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#acyclqutir .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#acyclqutir .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#acyclqutir .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#acyclqutir .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#acyclqutir .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#acyclqutir .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#acyclqutir .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#acyclqutir .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#acyclqutir .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#acyclqutir .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#acyclqutir .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#acyclqutir .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#acyclqutir .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#acyclqutir .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#acyclqutir .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#acyclqutir .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#acyclqutir .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#acyclqutir .gt_left {
+  text-align: left;
+}
+
+#acyclqutir .gt_center {
+  text-align: center;
+}
+
+#acyclqutir .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#acyclqutir .gt_font_normal {
+  font-weight: normal;
+}
+
+#acyclqutir .gt_font_bold {
+  font-weight: bold;
+}
+
+#acyclqutir .gt_font_italic {
+  font-style: italic;
+}
+
+#acyclqutir .gt_super {
+  font-size: 65%;
+}
+
+#acyclqutir .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#acyclqutir .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#acyclqutir .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#acyclqutir .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#acyclqutir .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#acyclqutir .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#acyclqutir .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#acyclqutir .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#acyclqutir div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading header">
+<th colspan="3" class="gt_heading gt_title gt_font_normal gt_bottom_border">Weighted vs. Unweighted Sample Demographics</th>
+</tr>
+<tr class="gt_col_headings even">
+<th id="varname" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">varname</th>
+<th id="weighted" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">weighted</th>
+<th id="unweighted" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">unweighted</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">sample_size</td>
+<td class="gt_row gt_right" headers="weighted">3127.00</td>
+<td class="gt_row gt_right" headers="unweighted">3127.00</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">female</td>
+<td class="gt_row gt_right" headers="weighted">0.50</td>
+<td class="gt_row gt_right" headers="unweighted">0.39</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">age_18_25</td>
+<td class="gt_row gt_right" headers="weighted">0.24</td>
+<td class="gt_row gt_right" headers="unweighted">0.22</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">age_26_35</td>
+<td class="gt_row gt_right" headers="weighted">0.26</td>
+<td class="gt_row gt_right" headers="unweighted">0.36</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">age_36_50</td>
+<td class="gt_row gt_right" headers="weighted">0.35</td>
+<td class="gt_row gt_right" headers="unweighted">0.31</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">age_51_65</td>
+<td class="gt_row gt_right" headers="weighted">0.10</td>
+<td class="gt_row gt_right" headers="unweighted">0.09</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">age_over65</td>
+<td class="gt_row gt_right" headers="weighted">0.04</td>
+<td class="gt_row gt_right" headers="unweighted">0.02</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">strata_metropolitan_area</td>
+<td class="gt_row gt_right" headers="weighted">0.25</td>
+<td class="gt_row gt_right" headers="unweighted">0.24</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">strata_north</td>
+<td class="gt_row gt_right" headers="weighted">0.19</td>
+<td class="gt_row gt_right" headers="unweighted">0.22</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">strata_central</td>
+<td class="gt_row gt_right" headers="weighted">0.22</td>
+<td class="gt_row gt_right" headers="unweighted">0.16</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">strata_rest_of_west</td>
+<td class="gt_row gt_right" headers="weighted">0.15</td>
+<td class="gt_row gt_right" headers="unweighted">0.08</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">strata_southern</td>
+<td class="gt_row gt_right" headers="weighted">0.19</td>
+<td class="gt_row gt_right" headers="unweighted">0.29</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">No_edu</td>
+<td class="gt_row gt_right" headers="weighted">0.06</td>
+<td class="gt_row gt_right" headers="unweighted">0.02</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">Primary</td>
+<td class="gt_row gt_right" headers="weighted">0.16</td>
+<td class="gt_row gt_right" headers="unweighted">0.14</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="varname">Secondary</td>
+<td class="gt_row gt_right" headers="weighted">0.65</td>
+<td class="gt_row gt_right" headers="unweighted">0.52</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="varname">University</td>
+<td class="gt_row gt_right" headers="weighted">0.13</td>
+<td class="gt_row gt_right" headers="unweighted">0.33</td>
+</tr>
+</tbody>
+</table>
+
+</div>
 </div>
 </div>
 <p>Which we can visualize as follows:</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="sc">|&gt;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove sample_size row since it's not a proportion</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(varname <span class="sc">!=</span> <span class="st">"sample_size"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pivot to long format for ggplot</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(weighted, unweighted), </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"sample_type"</span>, </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"proportion"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create the plot</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> varname, <span class="at">y =</span> proportion, <span class="at">fill =</span> sample_type)) <span class="sc">+</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"weighted"</span> <span class="ot">=</span> <span class="st">"#2E86AB"</span>, <span class="st">"unweighted"</span> <span class="ot">=</span> <span class="st">"#A23B72"</span>),</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Weighted"</span>, <span class="st">"Unweighted"</span>)) <span class="sc">+</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>()) <span class="sc">+</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Weighted vs. Unweighted Sample Demographics"</span>,</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Comparison of demographic proportions before and after post-stratification weighting"</span>,</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Demographic Variables"</span>,</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion"</span>,</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Sample Type"</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>,</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">color =</span> <span class="st">"gray60"</span>)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>demographics_out <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove sample_size row since it's not a proportion</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(varname <span class="sc">!=</span> <span class="st">"sample_size"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pivot to long format for ggplot</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(weighted, unweighted), </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"sample_type"</span>, </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"proportion"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create the plot</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> varname, <span class="at">y =</span> proportion, <span class="at">fill =</span> sample_type)) <span class="sc">+</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">"dodge"</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"weighted"</span> <span class="ot">=</span> <span class="st">"#2E86AB"</span>, <span class="st">"unweighted"</span> <span class="ot">=</span> <span class="st">"#A23B72"</span>),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Weighted"</span>, <span class="st">"Unweighted"</span>)) <span class="sc">+</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>()) <span class="sc">+</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Weighted vs. Unweighted Sample Demographics"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Comparison of demographic proportions before and after post-stratification weighting"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Demographic Variables"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion"</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Sample Type"</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">color =</span> <span class="st">"gray60"</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="post-stratification-survey-weights_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<div id="fig-weighted-unweighted-demographics" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-weighted-unweighted-demographics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="post-stratification-survey-weights_files/figure-html/fig-weighted-unweighted-demographics-1.png" id="fig-weighted-unweighted-demographics" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-weighted-unweighted-demographics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="substantive-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="substantive-analysis">Substantive Analysis</h2>
+<p>How does the use of post-stratification weights affect our results? <a href="#fig-weighted-unweighted-means" class="quarto-xref">Figure&nbsp;2</a> shows the weighted versus unweighted means for four key outcome variables — employed, plans to migrate to the U.S. in the next year, experiencing food insecurity, and trusts the Haitian government. As it turns out, the weighted vs.&nbsp;unweighted means are broadly similar, suggesting that the sources of selection into our sample (summarized in <a href="#fig-weighted-unweighted-demographics" class="quarto-xref">Figure&nbsp;1</a>, above) are not strong determinants of our outcomes of interest and thus not particularly consequential. But there was no ex-ante guarantee that this would be the case.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data for plotting</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> substantive_analysis <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(variable, unweighted_mean, unweighted_ci_lower, unweighted_ci_upper,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>         weighted_mean, weighted_ci_lower, weighted_ci_upper) <span class="sc">|&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>variable, <span class="at">names_to =</span> <span class="st">"measure"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(measure, <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"weight_type"</span>, <span class="st">"statistic"</span>), <span class="at">sep =</span> <span class="st">"_(?=mean|ci)"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> statistic, <span class="at">values_from =</span> value) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">weight_type =</span> <span class="fu">case_when</span>(</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>      weight_type <span class="sc">==</span> <span class="st">"unweighted"</span> <span class="sc">~</span> <span class="st">"Unweighted"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>      weight_type <span class="sc">==</span> <span class="st">"weighted"</span> <span class="sc">~</span> <span class="st">"Weighted"</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the plot</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>comparison_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> variable, <span class="at">y =</span> mean, <span class="at">color =</span> weight_type)) <span class="sc">+</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.3</span>), <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> ci_lower, <span class="at">ymax =</span> ci_upper), </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>                <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.3</span>), <span class="at">width =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Weighted vs Unweighted Estimates with 95% Confidence Intervals"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Haiti Survey Data - Key Outcome Variables"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Variable"</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Proportion"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Estimation Method"</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">percent_format</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Unweighted"</span> <span class="ot">=</span> <span class="st">"#E31A1C"</span>, <span class="st">"Weighted"</span> <span class="ot">=</span> <span class="st">"#1F78B4"</span>))</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(comparison_plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-weighted-unweighted-means" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-weighted-unweighted-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="post-stratification-survey-weights_files/figure-html/fig-weighted-unweighted-means-1.png" id="fig-weighted-unweighted-means" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-weighted-unweighted-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2
+</figcaption>
 </figure>
 </div>
 </div>
@@ -374,13 +1484,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>Note: the Latinobarometer does not specify the reference population it used to generate its weights or the procedure it used<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
