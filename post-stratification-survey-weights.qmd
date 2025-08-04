@@ -40,11 +40,16 @@ A gold standard methodology in survey-based research is probability sampling in 
 
 The challenge of generalizing findings from a selective sample to a larger population is not unique to survey research. Medical studies  often involve intensive recruitment protocols in which only a selective subset of eligible patients are enrolled. And in tech, UX researchers often conduct feedback surveys or A/B tests on convenience samples whose characteristics differ from those of their user base.   
 
-In these and many other settings, researchers can use a procedure known as post-stratification weighting to recover representative estimates. While the algorithm is complicated, the idea is simple: identify a set of weights such that the weighted sample matches the reference population in terms of its average demographic make-up and other variables of interest. Assuming these weights capture all the sources of confounding between the sample and reference population, analysis on the weighted sample will be unbiased.   
+In these and many other settings, researchers can use a procedure known as post-stratification weighting to recover representative estimates. While the algorithm is complicated, the idea is simple: identify a set of weights such that the weighted sample matches the reference population in terms of its average demographic make-up and other variables of interest. Assuming these weights capture all the sources of confounding between the sample and reference population, analysis on the weighted sample will be unbiased. 
+
+In practice, post-stratification weighting involves upweighting individuals that are under-represented in the sample relative to the reference population, and down-weighting those who are over-represented. 
+
 
 <!--- The idea is to algorithmically identify a set of weights such that the weighted marginal distributions for key demographic variables in our sample match the distributions of Haiti's actual population. --->
 <!---  to do: footnote with comparison to post-stratification weighting and design weights --->
 <!--- At the analysis phase, weighting can help medical researchers generalize from clinical sample to the broader patient population of interest. --->
+<!--- other links of interest: https://www.pewresearch.org/decoded/2020/03/26/weighting-survey-data-with-the-pewmethods-r-package/ --->
+
 
 
 ### Use Case: Random Digit Dialing Phone Survey in Haiti
